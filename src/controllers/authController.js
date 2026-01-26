@@ -10,11 +10,19 @@ export const register = async (req, res) => {
   try {
     const { username, fullName, email, password } = req.body
 
-    const existing = await UserModel.findOne({ email })
-    if (existing) {
+    // Проверка email
+    const existingEmail = await UserModel.findOne({ email })
+    if (existingEmail) {
       return res.status(400).json({ message: 'Email already used' })
     }
 
+    // Проверка username
+    const existingUsername = await UserModel.findOne({ username })
+    if (existingUsername) {
+      return res.status(400).json({ message: 'Username already taken' })
+    }
+
+    // Создание пользователя
     const user = new UserModel({ username, fullName, email, password })
     await user.save()
 
@@ -32,16 +40,24 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    const { email, password } = req.body
+    const { identifier, password } = req.body
 
-    const user = await UserModel.findOne({ email })
+    // Ищем по email или username
+    const user = await UserModel.findOne({
+      $or: [{ email: identifier }, { username: identifier }],
+    })
+
     if (!user) {
-      return res.status(400).json({ message: 'Incorrect email or password' })
+      return res
+        .status(400)
+        .json({ message: 'Incorrect email/username or password' })
     }
 
     const isMatch = await user.comparePassword(password)
     if (!isMatch) {
-      return res.status(400).json({ message: 'Incorrect email or password' })
+      return res
+        .status(400)
+        .json({ message: 'Incorrect email/username or password' })
     }
 
     const token = generateToken(user._id)
@@ -52,7 +68,7 @@ export const login = async (req, res) => {
         id: user._id,
         username: user.username,
         fullName: user.fullName,
-        email,
+        email: user.email,
       },
       token,
     })

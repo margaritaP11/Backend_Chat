@@ -1,6 +1,7 @@
 import express from 'express'
 import dotenv from 'dotenv'
 import connectDB from './config/db.js'
+import cors from 'cors'
 
 // Маршруты
 import authRoutes from './routes/authRoutes.js'
@@ -20,8 +21,17 @@ import socketHandler from './socket/socket.js'
 
 dotenv.config()
 
+// Создаём приложение
 const app = express()
 const PORT = process.env.PORT || 8080
+
+// CORS — ОБЯЗАТЕЛЬНО ДО ВСЕХ МАРШРУТОВ
+app.use(
+  cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+  }),
+)
 
 // Парсинг JSON
 app.use(express.json())
@@ -49,23 +59,23 @@ app.get('/', (req, res) => {
   res.send('Сервер работает ✅')
 })
 
+// Запуск сервера
 const start = async () => {
   try {
     await connectDB()
 
-    // Запускаем HTTP‑сервер
     const server = app.listen(PORT, () => {
       console.log(`Server started on port ${PORT}`)
     })
 
-    // Подключаем Socket.io к этому серверу
+    // Socket.io
     const io = new Server(server, {
       cors: {
-        origin: '*',
+        origin: 'http://localhost:5173',
+        credentials: true,
       },
     })
 
-    // Вешаем обработчик сокетов
     socketHandler(io)
   } catch (error) {
     console.error('Error starting server:', error)
