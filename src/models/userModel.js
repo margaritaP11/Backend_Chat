@@ -9,11 +9,12 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     avatar: { type: String, default: '' },
     bio: { type: String, default: '' },
+    website: { type: String, default: '' },
   },
   { timestamps: true },
 )
 
-// Хешируем пароль перед сохранением (БЕЗ next)
+// Хешируем пароль перед сохранением
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) return
 

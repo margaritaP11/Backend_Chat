@@ -18,7 +18,7 @@ export const createPost = async (req, res) => {
     const post = await Post.create({
       text: req.body.text,
       image: base64Image,
-      user: req.user,
+      user: req.user._id,
     })
 
     res.json(post)

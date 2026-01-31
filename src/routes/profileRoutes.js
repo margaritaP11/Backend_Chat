@@ -1,33 +1,27 @@
 import express from 'express'
 import { authMiddleware } from '../middlewares/authMiddleware.js'
 import {
+  getMyProfile,
   getUserProfile,
+  createUserProfile,
   updateUserProfile,
   updateAvatar,
-  deleteUser,
   deleteAvatar,
+  deleteUser,
 } from '../controllers/profileController.js'
 
 import { upload } from '../middlewares/uploadMiddleware.js'
 
 const router = express.Router()
 
-// Получить свой профиль
-router.get('/me', authMiddleware, getUserProfile)
-
-// Обновить свой профиль
+router.get('/me', authMiddleware, getMyProfile)
+router.post('/me', authMiddleware, createUserProfile)
 router.put('/me', authMiddleware, updateUserProfile)
 
-// Обновить аватар
 router.put('/avatar', authMiddleware, upload.single('avatar'), updateAvatar)
-
-// Удалить аватар
 router.delete('/avatar', authMiddleware, deleteAvatar)
 
-// Получить профиль по ID (должно быть ниже avatar!)
 router.get('/:id', getUserProfile)
-
-// Удалить пользователя по ID (тоже ниже avatar!)
 router.delete('/:id', deleteUser)
 
 export default router
