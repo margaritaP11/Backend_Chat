@@ -1,6 +1,7 @@
 import express from 'express'
+import multer from 'multer'
 import { authMiddleware } from '../middlewares/authMiddleware.js'
-import { upload } from '../middlewares/uploadMiddleware.js'
+
 import {
   createPost,
   getUserPosts,
@@ -8,26 +9,32 @@ import {
   getPostById,
   updatePost,
   getAllPosts,
+  getFeedPosts,
+  addComment, // ← ДОДАНО
 } from '../controllers/postController.js'
 
 const router = express.Router()
 
-// Создать пост с изображением
+const storage = multer.memoryStorage()
+const upload = multer({
+  storage,
+  limits: { fileSize: 20 * 1024 * 1024 },
+})
+
 router.post('/', authMiddleware, upload.single('image'), createPost)
 
-// Получить все посты (лента новостей)
-router.get('/', getAllPosts)
+router.get('/feed', authMiddleware, getFeedPosts)
 
-// Получить все посты конкретного пользователя
 router.get('/user/:id', getUserPosts)
 
-// Обновить пост
+router.get('/', authMiddleware, getAllPosts)
+
+router.get('/:id', getPostById)
+
 router.put('/:id', authMiddleware, upload.single('image'), updatePost)
 
-// Удалить пост
 router.delete('/:id', authMiddleware, deletePost)
 
-// Получить конкретный пост по ID
-router.get('/:id', getPostById)
+router.post('/:id/comment', authMiddleware, addComment) // ← ТЕПЕР ПРАЦЮЄ
 
 export default router

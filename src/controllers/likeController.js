@@ -1,12 +1,12 @@
 import Like from '../models/likeModel.js'
 import Post from '../models/postModel.js'
-import Notification from '../models/notificationModel.js'
 
 export const toggleLike = async (req, res) => {
   try {
     const userId = req.user
     const postId = req.params.id
 
+    // знайти лайк
     const existing = await Like.findOne({ user: userId, post: postId })
 
     if (existing) {

@@ -21,19 +21,20 @@ import socketHandler from './socket/socket.js'
 
 dotenv.config()
 
-// Создаём приложение
 const app = express()
 const PORT = process.env.PORT || 8080
 
-// CORS — ОБЯЗАТЕЛЬНО ДО ВСЕХ МАРШРУТОВ
+// ⭐ CORS — обязательно
 app.use(
   cors({
-    origin: 'http://localhost:5173',
+    origin: ['http://localhost:5173', 'http://localhost:5175'],
+
     credentials: true,
   }),
 )
 
-// Парсинг JSON
+// ⭐ ВАЖНО: сначала urlencoded, потом json
+app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 
 // Логирование запросов
@@ -42,7 +43,7 @@ app.use((req, res, next) => {
   next()
 })
 
-// Маршруты API
+// ⭐ Маршруты API
 app.use('/api/auth', authRoutes)
 app.use('/api/profile', profileRoutes)
 app.use('/api/posts', postRoutes)
@@ -59,7 +60,7 @@ app.get('/', (req, res) => {
   res.send('Сервер работает ✅')
 })
 
-// Запуск сервера
+// ⭐ Запуск сервера
 const start = async () => {
   try {
     await connectDB()

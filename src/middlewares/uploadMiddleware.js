@@ -1,19 +1,10 @@
 import multer from 'multer'
 
-// Храним файл в оперативной памяти
+// ⭐ Пам'ять, бо ми зберігаємо фото в base64
 const storage = multer.memoryStorage()
 
-// Ограничения (по желанию)
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith('image/')) {
-    cb(null, true)
-  } else {
-    cb(new Error('Можно загружать только изображения'), false)
-  }
-}
-
+// ⭐ Ліміт 20MB, щоб не було MulterError: File too large
 export const upload = multer({
   storage,
-  fileFilter,
-  limits: { fileSize: 2 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
 })
