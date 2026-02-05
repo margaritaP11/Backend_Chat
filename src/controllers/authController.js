@@ -3,26 +3,23 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' })
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '7d' })
 }
 
 export const register = async (req, res) => {
   try {
     const { username, fullName, email, password } = req.body
 
-    // Проверка email
     const existingEmail = await UserModel.findOne({ email })
     if (existingEmail) {
       return res.status(400).json({ message: 'Email already used' })
     }
 
-    // Проверка username
     const existingUsername = await UserModel.findOne({ username })
     if (existingUsername) {
       return res.status(400).json({ message: 'Username already taken' })
     }
 
-    // Создание пользователя
     const user = new UserModel({ username, fullName, email, password })
     await user.save()
 
@@ -42,7 +39,6 @@ export const login = async (req, res) => {
   try {
     const { identifier, password } = req.body
 
-    // Ищем по email или username
     const user = await UserModel.findOne({
       $or: [{ email: identifier }, { username: identifier }],
     })

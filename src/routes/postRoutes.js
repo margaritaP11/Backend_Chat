@@ -10,7 +10,7 @@ import {
   updatePost,
   getAllPosts,
   getFeedPosts,
-  addComment, // ← ДОДАНО
+  addComment,
 } from '../controllers/postController.js'
 
 const router = express.Router()
@@ -21,20 +21,28 @@ const upload = multer({
   limits: { fileSize: 20 * 1024 * 1024 },
 })
 
+// CREATE POST
 router.post('/', authMiddleware, upload.single('image'), createPost)
 
+// FEED
 router.get('/feed', authMiddleware, getFeedPosts)
 
-router.get('/user/:id', getUserPosts)
+// USER POSTS — ВИПРАВЛЕНО
+router.get('/user/:id', authMiddleware, getUserPosts)
 
+// ALL POSTS
 router.get('/', authMiddleware, getAllPosts)
 
-router.get('/:id', getPostById)
+// GET POST BY ID
+router.get('/:id', authMiddleware, getPostById)
 
+// UPDATE POST
 router.put('/:id', authMiddleware, upload.single('image'), updatePost)
 
+// DELETE POST
 router.delete('/:id', authMiddleware, deletePost)
 
-router.post('/:id/comment', authMiddleware, addComment) // ← ТЕПЕР ПРАЦЮЄ
+// ADD COMMENT
+router.post('/:id/comment', authMiddleware, addComment)
 
 export default router

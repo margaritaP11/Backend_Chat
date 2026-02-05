@@ -1,11 +1,12 @@
 import sharp from 'sharp'
 import Post from '../models/postModel.js'
 import Like from '../models/likeModel.js'
+import Follow from '../models/followModel.js'
 
 /* CREATE POST */
 export const createPost = async (req, res) => {
   try {
-    const userId = req.user
+    const userId = req.user._id
     const { text } = req.body
 
     if (!req.file) {
@@ -33,29 +34,35 @@ export const createPost = async (req, res) => {
 /* FEED — ВСІ ПОСТИ ДЛЯ HOME */
 export const getFeedPosts = async (req, res) => {
   try {
+    const currentUserId = req.user._id
+
     const posts = await Post.find()
       .populate('user', 'username avatar fullName')
       .populate('comments.user', 'username avatar')
       .sort({ createdAt: -1 })
       .limit(50)
 
-    const postsWithLikes = await Promise.all(
+    const followingDocs = await Follow.find({ follower: currentUserId })
+    const followingIds = followingDocs.map((f) => f.following.toString())
+
+    const postsWithData = await Promise.all(
       posts.map(async (post) => {
         const likesCount = await Like.countDocuments({ post: post._id })
         const liked = await Like.findOne({
           post: post._id,
-          user: req.user,
+          user: currentUserId,
         })
 
         return {
           ...post.toObject(),
           likesCount,
           liked: Boolean(liked),
+          isFollowing: followingIds.includes(post.user._id.toString()),
         }
       }),
     )
 
-    res.json(postsWithLikes)
+    res.json(postsWithData)
   } catch (error) {
     console.error('FEED ERROR:', error)
     res.status(500).json({ message: 'Server error' })
@@ -66,7 +73,7 @@ export const getFeedPosts = async (req, res) => {
 export const addComment = async (req, res) => {
   try {
     const postId = req.params.id
-    const userId = req.user
+    const userId = req.user._id
     const { text } = req.body
 
     if (!text) return res.status(400).json({ message: 'Comment is required' })
@@ -91,15 +98,15 @@ export const addComment = async (req, res) => {
   }
 }
 
-/* GET USER POSTS */
+/* GET USER POSTS — ПРАВИЛЬНИЙ ВАРІАНТ */
 export const getUserPosts = async (req, res) => {
   try {
     const profileOwnerId = req.params.id
-    const currentUserId = req.user
+    const currentUserId = req.user._id
 
-    const posts = await Post.find({ user: profileOwnerId }).sort({
-      createdAt: -1,
-    })
+    const posts = await Post.find({ user: profileOwnerId })
+      .sort({ createdAt: -1 })
+      .populate('user', 'username avatar') // ← ЦЕ ГОЛОВНЕ
 
     const postsWithLikes = await Promise.all(
       posts.map(async (post) => {
@@ -131,7 +138,7 @@ export const deletePost = async (req, res) => {
     const post = await Post.findById(postId)
 
     if (!post) return res.status(404).json({ message: 'Post not found' })
-    if (post.user.toString() !== req.user)
+    if (post.user.toString() !== req.user._id.toString())
       return res.status(403).json({ message: 'Access denied' })
 
     await post.deleteOne()
@@ -165,7 +172,7 @@ export const updatePost = async (req, res) => {
     const post = await Post.findById(req.params.id)
 
     if (!post) return res.status(404).json({ message: 'Post not found' })
-    if (post.user.toString() !== req.user)
+    if (post.user.toString() !== req.user._id.toString())
       return res.status(403).json({ message: 'Access denied' })
 
     if (req.body.text) post.text = req.body.text
@@ -190,6 +197,8 @@ export const updatePost = async (req, res) => {
 /* GET ALL POSTS */
 export const getAllPosts = async (req, res) => {
   try {
+    const currentUserId = req.user._id
+
     const posts = await Post.find()
       .sort({ createdAt: -1 })
       .populate('user', 'username avatar')
@@ -199,7 +208,7 @@ export const getAllPosts = async (req, res) => {
         const likesCount = await Like.countDocuments({ post: post._id })
         const liked = await Like.findOne({
           post: post._id,
-          user: req.user,
+          user: currentUserId,
         })
 
         return {

@@ -7,7 +7,7 @@ import sharp from 'sharp'
 ---------------------------------------------- */
 export const createUserProfile = async (req, res) => {
   try {
-    const userId = req.user
+    const userId = req.user._id
 
     const user = await User.findById(userId)
     if (!user) return res.status(404).json({ message: 'User not found' })
@@ -31,7 +31,7 @@ export const createUserProfile = async (req, res) => {
 ---------------------------------------------- */
 export const getMyProfile = async (req, res) => {
   try {
-    const userId = req.user
+    const userId = req.user._id
 
     const user = await User.findById(userId).select('-password')
     if (!user) return res.status(404).json({ message: 'User not found' })
@@ -65,7 +65,7 @@ export const getUserProfile = async (req, res) => {
 ---------------------------------------------- */
 export const updateUserProfile = async (req, res) => {
   try {
-    const userId = req.user
+    const userId = req.user._id
     const updates = {}
 
     if (req.body.username) updates.username = req.body.username
@@ -89,7 +89,7 @@ export const updateUserProfile = async (req, res) => {
 ---------------------------------------------- */
 export const updateAvatar = async (req, res) => {
   try {
-    const userId = req.user
+    const userId = req.user._id
 
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' })
@@ -120,7 +120,7 @@ export const updateAvatar = async (req, res) => {
 ---------------------------------------------- */
 export const deleteAvatar = async (req, res) => {
   try {
-    const userId = req.user
+    const userId = req.user._id
     const user = await User.findById(userId)
 
     if (!user) return res.status(404).json({ message: 'User not found' })

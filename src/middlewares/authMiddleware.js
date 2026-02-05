@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken'
+import User from '../models/userModel.js'
 
-export const authMiddleware = (req, res, next) => {
+export const authMiddleware = async (req, res, next) => {
   try {
     const header = req.headers.authorization
 
@@ -11,7 +12,13 @@ export const authMiddleware = (req, res, next) => {
     const token = header.split(' ')[1]
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
-    req.user = decoded.userId
+    // decoded.id — це правильне поле
+    const user = await User.findById(decoded.id)
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    req.user = user // тепер req.user._id існує
 
     next()
   } catch (error) {
