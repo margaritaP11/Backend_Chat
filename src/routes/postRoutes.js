@@ -11,6 +11,7 @@ import {
   getAllPosts,
   getFeedPosts,
   addComment,
+  getExplorePosts,
 } from '../controllers/postController.js'
 
 const router = express.Router()
@@ -27,7 +28,10 @@ router.post('/', authMiddleware, upload.single('image'), createPost)
 // FEED
 router.get('/feed', authMiddleware, getFeedPosts)
 
-// USER POSTS — ВИПРАВЛЕНО
+// EXPLORE — ДОДАНО
+router.get('/explore', authMiddleware, getExplorePosts)
+
+// USER POSTS
 router.get('/user/:id', authMiddleware, getUserPosts)
 
 // ALL POSTS

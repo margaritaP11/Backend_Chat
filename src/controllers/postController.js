@@ -31,7 +31,7 @@ export const createPost = async (req, res) => {
   }
 }
 
-/* FEED — ВСІ ПОСТИ ДЛЯ HOME */
+/* FEED */
 export const getFeedPosts = async (req, res) => {
   try {
     const currentUserId = req.user._id
@@ -69,6 +69,20 @@ export const getFeedPosts = async (req, res) => {
   }
 }
 
+/* EXPLORE — НОВИЙ МАРШРУТ */
+export const getExplorePosts = async (req, res) => {
+  try {
+    const posts = await Post.find()
+      .populate('user', 'username avatar')
+      .sort({ createdAt: -1 })
+
+    res.json(posts)
+  } catch (error) {
+    console.error('EXPLORE ERROR:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
 /* ADD COMMENT */
 export const addComment = async (req, res) => {
   try {
@@ -98,7 +112,7 @@ export const addComment = async (req, res) => {
   }
 }
 
-/* GET USER POSTS — ПРАВИЛЬНИЙ ВАРІАНТ */
+/* GET USER POSTS */
 export const getUserPosts = async (req, res) => {
   try {
     const profileOwnerId = req.params.id
@@ -106,7 +120,7 @@ export const getUserPosts = async (req, res) => {
 
     const posts = await Post.find({ user: profileOwnerId })
       .sort({ createdAt: -1 })
-      .populate('user', 'username avatar') // ← ЦЕ ГОЛОВНЕ
+      .populate('user', 'username avatar')
 
     const postsWithLikes = await Promise.all(
       posts.map(async (post) => {
