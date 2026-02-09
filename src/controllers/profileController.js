@@ -2,9 +2,6 @@ import User from '../models/userModel.js'
 import Follow from '../models/followModel.js'
 import sharp from 'sharp'
 
-/* ---------------------------------------------
-   📌 Создать профиль (POST /api/profile/me)
----------------------------------------------- */
 export const createUserProfile = async (req, res) => {
   try {
     const userId = req.user._id
@@ -26,9 +23,6 @@ export const createUserProfile = async (req, res) => {
   }
 }
 
-/* ---------------------------------------------
-   📌 Получить свой профиль (GET /api/profile/me)
----------------------------------------------- */
 export const getMyProfile = async (req, res) => {
   try {
     const userId = req.user._id
@@ -43,9 +37,6 @@ export const getMyProfile = async (req, res) => {
   }
 }
 
-/* ---------------------------------------------
-   📌 Получить профиль по ID (GET /api/profile/:id)
----------------------------------------------- */
 export const getUserProfile = async (req, res) => {
   try {
     const userId = req.params.id
@@ -60,9 +51,6 @@ export const getUserProfile = async (req, res) => {
   }
 }
 
-/* ---------------------------------------------
-   📌 Обновить профиль (PUT /api/profile/me)
----------------------------------------------- */
 export const updateUserProfile = async (req, res) => {
   try {
     const userId = req.user._id
@@ -84,9 +72,6 @@ export const updateUserProfile = async (req, res) => {
   }
 }
 
-/* ---------------------------------------------
-   📌 Обновить аватар (PUT /api/profile/avatar)
----------------------------------------------- */
 export const updateAvatar = async (req, res) => {
   try {
     const userId = req.user._id
@@ -115,9 +100,6 @@ export const updateAvatar = async (req, res) => {
   }
 }
 
-/* ---------------------------------------------
-   📌 Удалить аватар
----------------------------------------------- */
 export const deleteAvatar = async (req, res) => {
   try {
     const userId = req.user._id
@@ -135,9 +117,6 @@ export const deleteAvatar = async (req, res) => {
   }
 }
 
-/* ---------------------------------------------
-   📌 Удалить пользователя
----------------------------------------------- */
 export const deleteUser = async (req, res) => {
   try {
     const userId = req.params.id

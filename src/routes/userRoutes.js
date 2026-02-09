@@ -5,7 +5,6 @@ import { authMiddleware } from '../middlewares/authMiddleware.js'
 
 const router = express.Router()
 
-// ⭐ SEARCH USERS
 router.get('/search', authMiddleware, async (req, res) => {
   try {
     const query = req.query.q || ''
@@ -24,12 +23,11 @@ router.get('/search', authMiddleware, async (req, res) => {
   }
 })
 
-// ⭐ GET NOTIFICATIONS
 router.get('/notifications', authMiddleware, async (req, res) => {
   try {
     const notifications = await Notification.find({ user: req.user._id })
       .populate('fromUser', 'username avatar')
-      .populate('post', 'image _id') // ← ВАЖЛИВО! ДОДАНО _id
+      .populate('post', 'image _id')
       .sort({ createdAt: -1 })
 
     res.json(notifications)
@@ -39,7 +37,6 @@ router.get('/notifications', authMiddleware, async (req, res) => {
   }
 })
 
-// ⭐ DELETE NOTIFICATION
 router.delete('/notifications/:id', authMiddleware, async (req, res) => {
   try {
     await Notification.findOneAndDelete({

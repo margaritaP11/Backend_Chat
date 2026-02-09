@@ -2,7 +2,6 @@ import Follow from '../models/followModel.js'
 import User from '../models/userModel.js'
 import Notification from '../models/notificationModel.js'
 
-/* ---------------- FOLLOW ---------------- */
 export const followUser = async (req, res) => {
   try {
     const follower = req.user._id
@@ -22,10 +21,8 @@ export const followUser = async (req, res) => {
       return res.status(404).json({ message: 'Пользователь не найден' })
     }
 
-    // Создаем запись в Follow
     await Follow.create({ follower, following: userId })
 
-    // Обновляем массивы followers / following в User
     await User.findByIdAndUpdate(userId, {
       $addToSet: { followers: follower },
     })
@@ -34,10 +31,9 @@ export const followUser = async (req, res) => {
       $addToSet: { following: userId },
     })
 
-    // 🔥 УВЕДОМЛЕНИЕ О ПОДПИСКЕ
     await Notification.create({
-      user: userId, // кому уведомление
-      fromUser: follower, // кто подписался
+      user: userId,
+      fromUser: follower,
       type: 'follow',
       text: 'started following you',
     })
@@ -49,7 +45,6 @@ export const followUser = async (req, res) => {
   }
 }
 
-/* ---------------- UNFOLLOW ---------------- */
 export const unfollowUser = async (req, res) => {
   try {
     const follower = req.user._id
@@ -72,7 +67,6 @@ export const unfollowUser = async (req, res) => {
   }
 }
 
-/* ---------------- CHECK FOLLOW ---------------- */
 export const checkFollow = async (req, res) => {
   try {
     const follower = req.user._id
@@ -87,7 +81,6 @@ export const checkFollow = async (req, res) => {
   }
 }
 
-/* ---------------- GET FOLLOWERS ---------------- */
 export const getFollowers = async (req, res) => {
   try {
     const { userId } = req.params
@@ -104,7 +97,6 @@ export const getFollowers = async (req, res) => {
   }
 }
 
-/* ---------------- GET FOLLOWING ---------------- */
 export const getFollowing = async (req, res) => {
   try {
     const { userId } = req.params

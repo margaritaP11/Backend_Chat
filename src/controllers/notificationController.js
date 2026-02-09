@@ -1,6 +1,5 @@
 import Notification from '../models/notificationModel.js'
 
-// Получить все уведомления пользователя
 export const getNotifications = async (req, res) => {
   try {
     const userId = req.user
@@ -17,7 +16,6 @@ export const getNotifications = async (req, res) => {
   }
 }
 
-// Пометить уведомления как прочитанные
 export const markAsRead = async (req, res) => {
   try {
     const userId = req.user

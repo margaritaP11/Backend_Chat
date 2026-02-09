@@ -12,7 +12,6 @@ export const registerValidation = [
     .isEmail()
     .withMessage('Некорректный email'),
 
-  // ❗ УБИРАЕМ ВСЮ СЛОЖНУЮ ВАЛИДАЦИЮ ПАРОЛЯ
   body('password').notEmpty().withMessage('Пароль обязателен'),
 ]
 

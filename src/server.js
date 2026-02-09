@@ -25,7 +25,6 @@ dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 8080
 
-// ⭐ CORS
 app.use(
   cors({
     origin: ['http://localhost:5173', 'http://localhost:5175'],
@@ -36,13 +35,11 @@ app.use(
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 
-// Логирование
 app.use((req, res, next) => {
   console.log('REQUEST:', req.method, req.url)
   next()
 })
 
-// ⭐ Маршруты API
 app.use('/api/auth', authRoutes)
 app.use('/api/profile', profileRoutes)
 app.use('/api/posts', postRoutes)
@@ -53,14 +50,13 @@ app.use('/api/explore', exploreRoutes)
 app.use('/api/messages', messageRoutes)
 app.use('/api/follow', followRoutes)
 app.use('/api/notifications', notificationRoutes)
-app.use('/api/users', userRoutes) // ⭐ ДОДАНО
+app.use('/api/users', userRoutes)
 
-// Корневой маршрут
 app.get('/', (req, res) => {
   res.send('Сервер работает ✅')
 })
 
-// ⭐ Запуск сервера
+//
 const start = async () => {
   try {
     await connectDB()

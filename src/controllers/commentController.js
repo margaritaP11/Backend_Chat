@@ -2,7 +2,6 @@ import Comment from '../models/commentModel.js'
 import Post from '../models/postModel.js'
 import Notification from '../models/notificationModel.js'
 
-// ➤ Добавить комментарий
 export const addComment = async (req, res) => {
   try {
     const userId = req.user._id
@@ -20,11 +19,10 @@ export const addComment = async (req, res) => {
 
     const populated = await comment.populate('user', 'name avatar')
 
-    // 🔥 УВЕДОМЛЕНИЕ О КОММЕНТАРИИ
     if (post.user.toString() !== userId.toString()) {
       await Notification.create({
-        user: post.user, // кому уведомление
-        fromUser: userId, // кто комментирует
+        user: post.user,
+        fromUser: userId,
         type: 'comment',
         post: postId,
         text: 'commented your post',
@@ -38,7 +36,6 @@ export const addComment = async (req, res) => {
   }
 }
 
-// ➤ Получить комментарии
 export const getComments = async (req, res) => {
   try {
     const postId = req.params.id
@@ -54,7 +51,6 @@ export const getComments = async (req, res) => {
   }
 }
 
-// ➤ Лайк комментария
 export const toggleCommentLike = async (req, res) => {
   try {
     const userId = req.user._id
@@ -81,7 +77,6 @@ export const toggleCommentLike = async (req, res) => {
   }
 }
 
-// ➤ Удалить комментарий
 export const deleteComment = async (req, res) => {
   try {
     const userId = req.user._id

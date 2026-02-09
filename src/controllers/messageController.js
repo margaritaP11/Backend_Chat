@@ -3,7 +3,6 @@ import Message from '../models/messageModel.js'
 import User from '../models/userModel.js'
 import Notification from '../models/notificationModel.js'
 
-// 📌 Отправка сообщения
 export const sendMessage = async (req, res) => {
   try {
     const { receiver, text } = req.body
@@ -35,7 +34,6 @@ export const sendMessage = async (req, res) => {
   }
 }
 
-// 📌 История сообщений между двумя пользователями
 export const getMessages = async (req, res) => {
   try {
     const { userId } = req.params
@@ -55,7 +53,6 @@ export const getMessages = async (req, res) => {
   }
 }
 
-// 📌 Список диалогов (как в Instagram)
 export const getDialogs = async (req, res) => {
   try {
     const myId = new mongoose.Types.ObjectId(req.user.id)

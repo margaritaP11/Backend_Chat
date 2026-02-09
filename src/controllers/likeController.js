@@ -17,11 +17,10 @@ export const toggleLike = async (req, res) => {
     } else {
       await Like.create({ user: userId, post: postId })
 
-      // 🔥 УВЕДОМЛЕНИЕ О ЛАЙКЕ
       if (post.user.toString() !== userId.toString()) {
         await Notification.create({
-          user: post.user, // кому уведомление
-          fromUser: userId, // кто лайкнул
+          user: post.user,
+          fromUser: userId,
           type: 'like',
           post: postId,
           text: 'liked your post',
