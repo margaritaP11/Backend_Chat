@@ -1,11 +1,16 @@
 import Comment from '../models/commentModel.js'
+import Post from '../models/postModel.js'
+import Notification from '../models/notificationModel.js'
 
 // ➤ Добавить комментарий
 export const addComment = async (req, res) => {
   try {
-    const userId = req.user
+    const userId = req.user._id
     const postId = req.params.id
     const { text } = req.body
+
+    const post = await Post.findById(postId)
+    if (!post) return res.status(404).json({ message: 'Post not found' })
 
     const comment = await Comment.create({
       text,
@@ -14,6 +19,17 @@ export const addComment = async (req, res) => {
     })
 
     const populated = await comment.populate('user', 'name avatar')
+
+    // 🔥 УВЕДОМЛЕНИЕ О КОММЕНТАРИИ
+    if (post.user.toString() !== userId.toString()) {
+      await Notification.create({
+        user: post.user, // кому уведомление
+        fromUser: userId, // кто комментирует
+        type: 'comment',
+        post: postId,
+        text: 'commented your post',
+      })
+    }
 
     res.json(populated)
   } catch (error) {
@@ -41,7 +57,7 @@ export const getComments = async (req, res) => {
 // ➤ Лайк комментария
 export const toggleCommentLike = async (req, res) => {
   try {
-    const userId = req.user
+    const userId = req.user._id
     const commentId = req.params.id
 
     const comment = await Comment.findById(commentId)
@@ -68,7 +84,7 @@ export const toggleCommentLike = async (req, res) => {
 // ➤ Удалить комментарий
 export const deleteComment = async (req, res) => {
   try {
-    const userId = req.user
+    const userId = req.user._id
     const commentId = req.params.id
 
     const comment = await Comment.findById(commentId)

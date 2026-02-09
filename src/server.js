@@ -14,6 +14,7 @@ import exploreRoutes from './routes/exploreRoutes.js'
 import messageRoutes from './routes/messageRoutes.js'
 import followRoutes from './routes/followRoutes.js'
 import notificationRoutes from './routes/notificationRoutes.js'
+import userRoutes from './routes/userRoutes.js'
 
 // Socket.io
 import { Server } from 'socket.io'
@@ -24,20 +25,18 @@ dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 8080
 
-// ⭐ CORS — обязательно
+// ⭐ CORS
 app.use(
   cors({
     origin: ['http://localhost:5173', 'http://localhost:5175'],
-
     credentials: true,
   }),
 )
 
-// ⭐ ВАЖНО: сначала urlencoded, потом json
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 
-// Логирование запросов
+// Логирование
 app.use((req, res, next) => {
   console.log('REQUEST:', req.method, req.url)
   next()
@@ -54,6 +53,7 @@ app.use('/api/explore', exploreRoutes)
 app.use('/api/messages', messageRoutes)
 app.use('/api/follow', followRoutes)
 app.use('/api/notifications', notificationRoutes)
+app.use('/api/users', userRoutes) // ⭐ ДОДАНО
 
 // Корневой маршрут
 app.get('/', (req, res) => {
@@ -69,7 +69,6 @@ const start = async () => {
       console.log(`Server started on port ${PORT}`)
     })
 
-    // Socket.io
     const io = new Server(server, {
       cors: {
         origin: 'http://localhost:5173',

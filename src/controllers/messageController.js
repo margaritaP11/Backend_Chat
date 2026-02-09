@@ -1,38 +1,28 @@
+import mongoose from 'mongoose'
 import Message from '../models/messageModel.js'
 import User from '../models/userModel.js'
 import Notification from '../models/notificationModel.js'
 
-// Отправка сообщения
+// 📌 Отправка сообщения
 export const sendMessage = async (req, res) => {
   try {
     const { receiver, text } = req.body
     const sender = req.user.id
 
-    // Проверяем, существует ли получатель
     const receiverExists = await User.findById(receiver)
     if (!receiverExists) {
       return res.status(404).json({ message: 'Receiver not found' })
     }
 
-    // Создаём сообщение
     const message = await Message.create({ sender, receiver, text })
 
-    // Создаём уведомление
     await Notification.create({
-      user: receiver, // кому уведомление
-      fromUser: sender, // кто отправил
+      user: receiver,
+      fromUser: sender,
       type: 'message',
       message: text,
     })
 
-    // Real-time уведомление
-    req.io.to(receiver.toString()).emit('receive_notification', {
-      type: 'message',
-      fromUser: sender,
-      text,
-    })
-
-    // Real-time сообщение
     req.io.to(receiver.toString()).emit('receive_message', {
       sender,
       text,
@@ -45,7 +35,7 @@ export const sendMessage = async (req, res) => {
   }
 }
 
-// История сообщений между двумя пользователями
+// 📌 История сообщений между двумя пользователями
 export const getMessages = async (req, res) => {
   try {
     const { userId } = req.params
@@ -65,10 +55,10 @@ export const getMessages = async (req, res) => {
   }
 }
 
-// Список диалогов (как в Instagram)
+// 📌 Список диалогов (как в Instagram)
 export const getDialogs = async (req, res) => {
   try {
-    const myId = req.user.id
+    const myId = new mongoose.Types.ObjectId(req.user.id)
 
     const dialogs = await Message.aggregate([
       {
@@ -76,9 +66,7 @@ export const getDialogs = async (req, res) => {
           $or: [{ sender: myId }, { receiver: myId }],
         },
       },
-      {
-        $sort: { createdAt: -1 },
-      },
+      { $sort: { createdAt: -1 } },
       {
         $group: {
           _id: {
@@ -90,7 +78,19 @@ export const getDialogs = async (req, res) => {
       },
     ])
 
-    res.json(dialogs)
+    const populated = await Promise.all(
+      dialogs.map(async (d) => {
+        const user = await User.findById(d._id).select('username avatar')
+        return {
+          _id: d._id,
+          lastMessage: d.lastMessage,
+          lastTime: d.lastTime,
+          user,
+        }
+      }),
+    )
+
+    res.json(populated)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Server error' })

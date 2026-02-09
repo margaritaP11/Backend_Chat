@@ -12,13 +12,13 @@ export const authMiddleware = async (req, res, next) => {
     const token = header.split(' ')[1]
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
-    // decoded.id — це правильне поле
     const user = await User.findById(decoded.id)
     if (!user) {
       return res.status(404).json({ message: 'User not found' })
     }
 
-    req.user = user // тепер req.user._id існує
+    // ⭐ ВАЖЛИВО: повертаємо user як є, з _id
+    req.user = user
 
     next()
   } catch (error) {

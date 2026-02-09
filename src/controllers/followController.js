@@ -34,18 +34,12 @@ export const followUser = async (req, res) => {
       $addToSet: { following: userId },
     })
 
-    // Уведомление
+    // 🔥 УВЕДОМЛЕНИЕ О ПОДПИСКЕ
     await Notification.create({
-      user: userId,
-      fromUser: follower,
+      user: userId, // кому уведомление
+      fromUser: follower, // кто подписался
       type: 'follow',
-      message: 'Новый подписчик',
-    })
-
-    req.io.to(userId.toString()).emit('receive_notification', {
-      type: 'follow',
-      fromUser: follower,
-      message: 'Новый подписчик',
+      text: 'started following you',
     })
 
     res.json({ success: true, message: 'Подписка успешна' })
@@ -63,7 +57,6 @@ export const unfollowUser = async (req, res) => {
 
     await Follow.findOneAndDelete({ follower, following: userId })
 
-    // Удаляем из массивов followers / following
     await User.findByIdAndUpdate(userId, {
       $pull: { followers: follower },
     })
