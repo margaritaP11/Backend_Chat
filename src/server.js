@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 import connectDB from './config/db.js'
 import cors from 'cors'
 
-// Маршруты
+// Routes
 import authRoutes from './routes/authRoutes.js'
 import profileRoutes from './routes/profileRoutes.js'
 import postRoutes from './routes/postRoutes.js'
@@ -25,9 +25,14 @@ dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 8080
 
+// ⭐ CORS — дозволяємо ВСІ твої фронтенд-порти
 app.use(
   cors({
-    origin: ['http://localhost:5173', 'http://localhost:5175'],
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:5175',
+    ],
     credentials: true,
   }),
 )
@@ -40,6 +45,7 @@ app.use((req, res, next) => {
   next()
 })
 
+// Routes
 app.use('/api/auth', authRoutes)
 app.use('/api/profile', profileRoutes)
 app.use('/api/posts', postRoutes)
@@ -56,7 +62,6 @@ app.get('/', (req, res) => {
   res.send('Сервер работает ✅')
 })
 
-//
 const start = async () => {
   try {
     await connectDB()
@@ -65,9 +70,14 @@ const start = async () => {
       console.log(`Server started on port ${PORT}`)
     })
 
+    // ⭐ ВИПРАВЛЕНИЙ socket.io CORS
     const io = new Server(server, {
       cors: {
-        origin: 'http://localhost:5173',
+        origin: [
+          'http://localhost:5173',
+          'http://localhost:5174',
+          'http://localhost:5175',
+        ],
         credentials: true,
       },
     })

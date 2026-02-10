@@ -2,6 +2,7 @@ import sharp from 'sharp'
 import Post from '../models/postModel.js'
 import Like from '../models/likeModel.js'
 import Follow from '../models/followModel.js'
+import Comment from '../models/commentModel.js' // ← ДОДАНО
 
 /* CREATE POST */
 export const createPost = async (req, res) => {
@@ -36,15 +37,17 @@ export const getFeedPosts = async (req, res) => {
   try {
     const currentUserId = req.user._id
 
+    // 1. Load posts
     const posts = await Post.find()
       .populate('user', 'username avatar fullName')
-      .populate('comments.user', 'username avatar')
       .sort({ createdAt: -1 })
       .limit(50)
 
+    // 2. Load following list
     const followingDocs = await Follow.find({ follower: currentUserId })
     const followingIds = followingDocs.map((f) => f.following.toString())
 
+    // 3. Attach comments + likes + following
     const postsWithData = await Promise.all(
       posts.map(async (post) => {
         const likesCount = await Like.countDocuments({ post: post._id })
@@ -53,8 +56,14 @@ export const getFeedPosts = async (req, res) => {
           user: currentUserId,
         })
 
+        // ← Load comments from separate collection
+        const comments = await Comment.find({ post: post._id })
+          .populate('user', 'username avatar')
+          .sort({ createdAt: 1 })
+
         return {
-          ...post.toObject(),
+          ...post.toJSON(),
+          comments, // ← ADD COMMENTS HERE
           likesCount,
           liked: Boolean(liked),
           isFollowing: followingIds.includes(post.user._id.toString()),
@@ -69,7 +78,7 @@ export const getFeedPosts = async (req, res) => {
   }
 }
 
-/* EXPLORE — НОВИЙ МАРШРУТ */
+/* EXPLORE */
 export const getExplorePosts = async (req, res) => {
   try {
     const posts = await Post.find()
@@ -92,20 +101,16 @@ export const addComment = async (req, res) => {
 
     if (!text) return res.status(400).json({ message: 'Comment is required' })
 
-    const post = await Post.findById(postId)
-    if (!post) return res.status(404).json({ message: 'Post not found' })
-
-    post.comments.push({
+    // Create comment in separate collection
+    const comment = await Comment.create({
       user: userId,
+      post: postId,
       text,
-      createdAt: new Date(),
     })
 
-    await post.save()
+    const populated = await comment.populate('user', 'username avatar')
 
-    const populated = await post.populate('comments.user', 'username avatar')
-
-    res.json(populated.comments)
+    res.json(populated)
   } catch (error) {
     console.error('ADD COMMENT ERROR:', error)
     res.status(500).json({ message: 'Server error' })
@@ -130,8 +135,13 @@ export const getUserPosts = async (req, res) => {
           user: currentUserId,
         })
 
+        const comments = await Comment.find({ post: post._id })
+          .populate('user', 'username avatar')
+          .sort({ createdAt: 1 })
+
         return {
-          ...post.toObject(),
+          ...post.toJSON(),
+          comments,
           likesCount,
           liked: Boolean(liked),
         }
@@ -155,7 +165,9 @@ export const deletePost = async (req, res) => {
     if (post.user.toString() !== req.user._id.toString())
       return res.status(403).json({ message: 'Access denied' })
 
+    await Comment.deleteMany({ post: postId }) // ← delete comments too
     await post.deleteOne()
+
     res.json({ message: 'Post deleted successfully' })
   } catch (error) {
     console.error('DELETE POST ERROR:', error)
@@ -173,7 +185,14 @@ export const getPostById = async (req, res) => {
 
     if (!post) return res.status(404).json({ message: 'Post not found' })
 
-    res.json(post)
+    const comments = await Comment.find({ post: post._id })
+      .populate('user', 'username avatar')
+      .sort({ createdAt: 1 })
+
+    res.json({
+      ...post.toJSON(),
+      comments,
+    })
   } catch (error) {
     console.error('GET POST BY ID ERROR:', error)
     res.status(500).json({ message: 'Server error' })
@@ -225,8 +244,13 @@ export const getAllPosts = async (req, res) => {
           user: currentUserId,
         })
 
+        const comments = await Comment.find({ post: post._id })
+          .populate('user', 'username avatar')
+          .sort({ createdAt: 1 })
+
         return {
-          ...post.toObject(),
+          ...post.toJSON(),
+          comments,
           likesCount,
           liked: Boolean(liked),
         }

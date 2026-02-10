@@ -2,20 +2,43 @@ import mongoose from 'mongoose'
 
 const notificationSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // кому уведомление
+    // кому уведомление
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+
+    // кто вызвал уведомление
     fromUser: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-    }, // кто вызвал уведомление
+    },
+
+    // тип уведомления
     type: {
       type: String,
       enum: ['like', 'comment', 'follow', 'message'],
       required: true,
     },
-    post: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' }, // для лайков/комментов
-    text: { type: String }, // текст уведомления
-    isRead: { type: Boolean, default: false },
+
+    // пост, если уведомление связано с постом
+    post: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Post',
+    },
+
+    // текст уведомления (например: "liked your post")
+    text: {
+      type: String,
+    },
+
+    // прочитано или нет
+    isRead: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true },
 )
