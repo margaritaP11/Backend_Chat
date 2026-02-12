@@ -5,7 +5,7 @@ import {
   getMessages,
   getDialogs,
   getUnreadCounts,
-  deleteDialog, // ← ОБОВʼЯЗКОВО ДОДАНО
+  deleteDialog,
 } from '../controllers/messageController.js'
 
 const router = express.Router()

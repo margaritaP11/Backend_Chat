@@ -14,7 +14,6 @@ export const sendMessage = async (req, res) => {
       return res.status(404).json({ message: 'Receiver not found' })
     }
 
-    // Create message with unread = true
     const message = await Message.create({
       sender,
       receiver,
@@ -22,7 +21,6 @@ export const sendMessage = async (req, res) => {
       unread: true,
     })
 
-    // Create notification with isRead = false
     await Notification.create({
       user: receiver,
       fromUser: sender,
@@ -31,9 +29,10 @@ export const sendMessage = async (req, res) => {
       isRead: false,
     })
 
-    // Emit socket event
+    // ⭐ SOCKET
     req.io.to(receiver.toString()).emit('receive_message', {
       sender,
+      receiver,
       text,
     })
 
@@ -50,7 +49,6 @@ export const getMessages = async (req, res) => {
     const { userId } = req.params
     const myId = req.user.id
 
-    // Mark messages as read
     await Message.updateMany(
       { sender: userId, receiver: myId, unread: true },
       { $set: { unread: false } },
@@ -97,7 +95,6 @@ export const getDialogs = async (req, res) => {
       dialogs.map(async (d) => {
         const user = await User.findById(d._id).select('username avatar')
 
-        // Count unread messages from this user
         const unread = await Message.countDocuments({
           sender: d._id,
           receiver: myId,
@@ -145,6 +142,8 @@ export const getUnreadCounts = async (req, res) => {
     res.status(500).json({ message: 'Server error' })
   }
 }
+
+/* DELETE DIALOG */
 export const deleteDialog = async (req, res) => {
   try {
     const myId = req.user.id

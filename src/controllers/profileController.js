@@ -1,7 +1,8 @@
 import User from '../models/userModel.js'
-import Follow from '../models/followModel.js'
-import sharp from 'sharp'
+import path from 'path'
+import fs from 'fs'
 
+// ---------------------- CREATE PROFILE ----------------------
 export const createUserProfile = async (req, res) => {
   try {
     const userId = req.user._id
@@ -23,6 +24,7 @@ export const createUserProfile = async (req, res) => {
   }
 }
 
+// ---------------------- GET MY PROFILE ----------------------
 export const getMyProfile = async (req, res) => {
   try {
     const userId = req.user._id
@@ -37,6 +39,7 @@ export const getMyProfile = async (req, res) => {
   }
 }
 
+// ---------------------- GET USER PROFILE ----------------------
 export const getUserProfile = async (req, res) => {
   try {
     const userId = req.params.id
@@ -51,6 +54,7 @@ export const getUserProfile = async (req, res) => {
   }
 }
 
+// ---------------------- UPDATE PROFILE ----------------------
 export const updateUserProfile = async (req, res) => {
   try {
     const userId = req.user._id
@@ -72,24 +76,29 @@ export const updateUserProfile = async (req, res) => {
   }
 }
 
+// ---------------------- UPDATE AVATAR ----------------------
 export const updateAvatar = async (req, res) => {
   try {
+    console.log('UPDATE AVATAR HIT, file:', req.file)
+
     const userId = req.user._id
 
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' })
     }
 
-    const resizedImage = await sharp(req.file.buffer)
-      .resize(400)
-      .jpeg({ quality: 70 })
-      .toBuffer()
+    const filePath = `uploads/${req.file.filename}`
 
-    const base64Image = `data:image/jpeg;base64,${resizedImage.toString('base64')}`
+    const user = await User.findById(userId)
+
+    if (user.avatar && user.avatar.startsWith('uploads/')) {
+      const oldPath = path.join(process.cwd(), user.avatar)
+      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath)
+    }
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { avatar: base64Image },
+      { avatar: filePath },
       { new: true },
     ).select('-password')
 
@@ -100,6 +109,7 @@ export const updateAvatar = async (req, res) => {
   }
 }
 
+// ---------------------- DELETE AVATAR ----------------------
 export const deleteAvatar = async (req, res) => {
   try {
     const userId = req.user._id
@@ -107,26 +117,17 @@ export const deleteAvatar = async (req, res) => {
 
     if (!user) return res.status(404).json({ message: 'User not found' })
 
+    if (user.avatar && user.avatar.startsWith('uploads/')) {
+      const filePath = path.join(process.cwd(), user.avatar)
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath)
+    }
+
     user.avatar = ''
     await user.save()
 
     res.json({ message: 'Avatar deleted successfully' })
   } catch (error) {
     console.error('DELETE AVATAR ERROR:', error)
-    res.status(500).json({ message: 'Server error' })
-  }
-}
-
-export const deleteUser = async (req, res) => {
-  try {
-    const userId = req.params.id
-
-    const deletedUser = await User.findByIdAndDelete(userId)
-    if (!deletedUser) return res.status(404).json({ message: 'User not found' })
-
-    res.json({ message: 'User deleted successfully' })
-  } catch (error) {
-    console.error('DELETE USER ERROR:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }

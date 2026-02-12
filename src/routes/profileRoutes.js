@@ -7,7 +7,6 @@ import {
   updateUserProfile,
   updateAvatar,
   deleteAvatar,
-  deleteUser,
 } from '../controllers/profileController.js'
 
 import { upload } from '../middlewares/uploadMiddleware.js'
@@ -15,17 +14,12 @@ import { upload } from '../middlewares/uploadMiddleware.js'
 const router = express.Router()
 
 router.get('/me', authMiddleware, getMyProfile)
-
 router.post('/me', authMiddleware, createUserProfile)
-
 router.put('/me', authMiddleware, updateUserProfile)
 
 router.put('/avatar', authMiddleware, upload.single('avatar'), updateAvatar)
-
 router.delete('/avatar', authMiddleware, deleteAvatar)
 
 router.get('/:id', getUserProfile)
-
-router.delete('/:id', deleteUser)
 
 export default router

@@ -10,6 +10,10 @@ export const register = async (req, res) => {
   try {
     const { username, fullName, email, password } = req.body
 
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: 'All fields are required' })
+    }
+
     const existingEmail = await UserModel.findOne({ email })
     if (existingEmail) {
       return res.status(400).json({ message: 'Email already used' })
@@ -27,7 +31,13 @@ export const register = async (req, res) => {
 
     res.status(201).json({
       message: 'Registered',
-      user: { id: user._id, username, fullName, email },
+      user: {
+        id: user._id,
+        username: user.username,
+        fullName: user.fullName,
+        email: user.email,
+        avatar: user.avatar,
+      },
       token,
     })
   } catch (error) {
@@ -65,6 +75,7 @@ export const login = async (req, res) => {
         username: user.username,
         fullName: user.fullName,
         email: user.email,
+        avatar: user.avatar,
       },
       token,
     })
