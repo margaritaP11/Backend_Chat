@@ -7,7 +7,7 @@ export default function socketHandler(io) {
   io.on('connection', (socket) => {
     console.log('User connected:', socket.id)
 
-    // JOIN
+    // JOIN — пользователь заходит в комнату по userId
     socket.on('join', (userId) => {
       socket.join(userId)
       onlineUsers.set(userId, socket.id)
@@ -32,7 +32,10 @@ export default function socketHandler(io) {
           isRead: false,
         })
 
+        // 🔥 Отправляем сообщение и получателю, и отправителю
         io.to(receiver).emit('receive_message', msg)
+        io.to(sender).emit('receive_message', msg)
+
         io.to(receiver).emit('receive_notification', notif)
 
         const unreadMessages = await Message.countDocuments({
